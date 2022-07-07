@@ -79,10 +79,10 @@ function App() {
                   radius={8}
                   color={
                     values.edr > 0.8
-                      ? '#900C3F '
+                      ? '#E15759'
                       : values.edr > 0.5
-                      ? '#FF5733'
-                      : '#FFC300'
+                      ? '#F28E2B'
+                      : '#EDC948'
                   }
                 >
                   <Popup>{`EDR of ${values.edr.toFixed(
