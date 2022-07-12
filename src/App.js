@@ -7,11 +7,17 @@ import {
   Polyline,
   Popup,
 } from 'react-leaflet';
+import { Calendar } from 'react-calendar';
+
+import { cleanSessionName, compareDate } from './utils.js';
+
+import 'react-calendar/dist/Calendar.css';
 import './App.css';
 
 const API = 'http://192.168.1.13:3456';
 
 function App() {
+  const [years, setYears] = useState(null);
   const [day, setDay] = useState('');
   const [days, setDays] = useState(null);
   const [sessions, setSessions] = useState(null);
@@ -21,7 +27,26 @@ function App() {
   useEffect(() => {
     fetch(`${API}/days`)
       .then((response) => response.json())
-      .then((data) => setDays(data));
+      .then((data) => {
+        data.sort(compareDate);
+
+        const result = {};
+
+        for (let i = 0; i < data.length; i += 1) {
+          const s = data[i].split('-');
+
+          if (!(s[0] in result)) {
+            result[s[0]] = [];
+          }
+
+          if (!result[s[0]].includes(s[1])) {
+            result[s[0]].push(s[1]);
+          }
+        }
+
+        setYears(result);
+        setDays(data);
+      });
   }, []);
 
   function getDay(day) {
@@ -33,17 +58,6 @@ function App() {
         setAnomalies(data.anomalies);
         setSamples(null); // Clear sample highlight if day changes
       });
-  }
-
-  function compareDate(a, b) {
-    const aTime = Date.parse(a.time);
-    const bTime = Date.parse(b.time);
-
-    if (aTime < bTime) return -1;
-
-    if (aTime > bTime) return 1;
-
-    return 0;
   }
 
   function getSample(day, session) {
@@ -59,11 +73,6 @@ function App() {
 
         setSamples(result);
       });
-  }
-
-  function cleanSessionName(session) {
-    const split = session.split('_');
-    return `${split[2]} ${split[0].split('T')[1].split('.')[0]}`;
   }
 
   return (
@@ -85,13 +94,13 @@ function App() {
                       : '#EDC948'
                   }
                 >
-                  <Popup>{`EDR of ${values.edr.toFixed(
-                    3
-                  )} at approximately ${values.alt.toFixed(
-                    1
-                  )} meters of altitude going ${values.ms.toFixed(
-                    1
-                  )} m/s`}</Popup>
+                  <Popup>
+                    {`EDR of ${values.edr.toFixed(
+                      3
+                    )} at approximately ${values.alt.toFixed(
+                      1
+                    )} meters of altitude going ${values.ms.toFixed(1)} m/s`}
+                  </Popup>
                 </CircleMarker>
               ))
             )}
@@ -108,23 +117,51 @@ function App() {
             attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           />
         </MapContainer>
-
-        {days &&
-          days.map((day, i) => (
-            <button key={`${day}_${i}`} onClick={() => getDay(day)}>
-              {day}
-            </button>
-          ))}
-
-        {sessions &&
-          sessions.map((entry, i) => (
-            <button
-              key={`${entry.session}_${i}`}
-              onClick={() => getSample(day, entry.session)}
-            >
-              {cleanSessionName(entry.session)}
-            </button>
-          ))}
+        <div className='calendar-container'>
+          {days && (
+            <Calendar
+              tileClassName={({ date, view }) => {
+                if (view === 'month') {
+                  if (days.includes(date.toISOString().split('T')[0])) {
+                    return 'highlight';
+                  } else {
+                    return 'disabled';
+                  }
+                } else if (view === 'year') {
+                  const s = date.toISOString().split('-');
+                  if (s[0] in years && years[s[0]].includes(s[1])) {
+                    return 'highlight';
+                  } else {
+                    return 'disabled';
+                  }
+                } else if (view === 'decade') {
+                  const s = date.toISOString().split('-');
+                  if (s[0] in years) {
+                    return 'highlight';
+                  } else {
+                    return 'disabled';
+                  }
+                }
+              }}
+              onClickDay={(d) => getDay(d.toISOString().split('T')[0])}
+              onViewChange={(view) => {
+                if (view === 'decade') return;
+              }}
+            />
+          )}
+          <div className='session-container'>
+            {sessions &&
+              sessions.map((entry, i) => (
+                <button
+                  className='session-button'
+                  key={`${entry.session}_${i}`}
+                  onClick={() => getSample(day, entry.session)}
+                >
+                  {cleanSessionName(entry.session)}
+                </button>
+              ))}
+          </div>
+        </div>
       </main>
     </div>
   );
