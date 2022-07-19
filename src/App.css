@@ -14,19 +14,27 @@
 }
 
 .session-container {
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
 }
 
+.session-title {
+  width: 100%;
+  line-height: 36px;
+  margin: 4px 4px 4px 4px;
+  border-bottom: 1px solid black;
+}
+
 .session-button {
-  width: 84px;
+  width: 192px;
   height: 40px;
+  line-height: 32px;
   margin: 0px 4px 4px 4px;
   background: none;
   text-align: center;
-  line-height: 16px;
-  outline: none;
   border: 1px solid #a0a096;
+  text-decoration: none;
 }
 
 .session-button:hover,
@@ -55,7 +63,3 @@
 .highlight:onclick {
   background: #31a354 !important;
 }
-
-/* .react-calendar__navigation__label { */
-/*   pointer-events: none; */
-/* } */

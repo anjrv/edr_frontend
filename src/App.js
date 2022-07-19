@@ -9,7 +9,7 @@ import {
 } from 'react-leaflet';
 import { Calendar } from 'react-calendar';
 
-import { cleanSessionName, compareDate } from './utils.js';
+import { cleanSessionName, compareDate, compareEdr } from './utils.js';
 
 import 'react-calendar/dist/Calendar.css';
 import './App.css';
@@ -49,12 +49,30 @@ function App() {
       });
   }, []);
 
+  function largestAnomalyForSession(s) {
+    let res = 0;
+
+    for (let i = 0; i < anomalies.length; i += 1) {
+      if (anomalies[i].session === s) {
+        res = anomalies[i].measurements[0].edr;
+        break;
+      }
+    }
+
+    return res;
+  }
+
   function getDay(day) {
     fetch(`${API}/days/${day}`)
       .then((response) => response.json())
       .then((data) => {
         setDay(day);
         setSessions(data.sessions);
+        data.anomalies.forEach((anomaly) => {
+          anomaly.measurements = anomaly.measurements
+            .sort(compareEdr)
+            .reverse();
+        }); // Sort so we can add color markers to session buttons
         setAnomalies(data.anomalies);
         setSamples(null); // Clear sample highlight if day changes
       });
@@ -150,15 +168,32 @@ function App() {
             />
           )}
           <div className='session-container'>
+            {sessions && (
+              <h3 className='session-title'>Measurement sessions for: {day}</h3>
+            )}
+
             {sessions &&
               sessions.map((entry, i) => (
-                <button
+                <div
                   className='session-button'
                   key={`${entry.session}_${i}`}
                   onClick={() => getSample(day, entry.session)}
                 >
-                  {cleanSessionName(entry.session)}
-                </button>
+                  {cleanSessionName(entry.session) + ' '}
+                  <font
+                    color={
+                      largestAnomalyForSession(entry.session) > 0.8
+                        ? '#E15759'
+                        : largestAnomalyForSession(entry.session) > 0.5
+                        ? '#F28E2B'
+                        : largestAnomalyForSession(entry.session) > 0.2
+                        ? '#EDC948'
+                        : 'white'
+                    }
+                  >
+                    <span>⚠</span>
+                  </font>
+                </div>
               ))}
           </div>
         </div>
