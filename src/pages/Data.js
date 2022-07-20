@@ -6,7 +6,9 @@ import {
   FeatureGroup,
   Polyline,
   Popup,
+  useMap,
 } from 'react-leaflet';
+import { latLngBounds } from 'leaflet';
 import { Calendar } from 'react-calendar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -21,6 +23,8 @@ import 'react-calendar/dist/Calendar.css';
 import './Data.css';
 
 const API = 'http://192.168.1.13:3456';
+const DEFAULT_CENTER = [64.9631, -19.0208];
+const DEFAULT_ZOOM = 6;
 
 const Data = () => {
   const [years, setYears] = useState(null);
@@ -99,125 +103,142 @@ const Data = () => {
       });
   }
 
+  const ChangeView = ({ markers }) => {
+    const map = useMap();
+    let center = DEFAULT_CENTER;
+
+    if (markers) {
+      center = markers[Math.floor(markers.length / 2)];
+
+      let markerBounds = latLngBounds({});
+      samples.forEach((marker) => markerBounds.extend(marker));
+
+      map.fitBounds(markerBounds);
+    } else {
+      map.setZoom(DEFAULT_ZOOM);
+    }
+
+    map.setView(center);
+    return null;
+  };
+
   return (
-      <main>
-        <MapContainer center={[64.9631, -19.0208]} zoom={6}>
-          {anomalies &&
-            anomalies.map((entry) =>
-              entry.measurements.map((values) => (
-                <CircleMarker
-                  key={`${entry.session}_${values.time}`}
-                  center={[values.lat, values.lon]}
-                  radius={8}
+    <main>
+      <MapContainer center={DEFAULT_CENTER} zoom={DEFAULT_ZOOM}>
+        <ChangeView markers={samples} />
+        {anomalies &&
+          anomalies.map((entry) =>
+            entry.measurements.map((values) => (
+              <CircleMarker
+                key={`${entry.session}_${values.time}`}
+                center={[values.lat, values.lon]}
+                radius={8}
+                color={
+                  values.edr > 0.8
+                    ? '#E15759'
+                    : values.edr > 0.5
+                    ? '#F28E2B'
+                    : '#EDC948'
+                }
+              >
+                <Popup>
+                  {`EDR of ${values.edr.toFixed(
+                    3
+                  )} at approximately ${values.alt.toFixed(
+                    1
+                  )} meters of altitude going ${values.ms.toFixed(1)} m/s`}
+                </Popup>
+              </CircleMarker>
+            ))
+          )}
+        {samples &&
+          (samples.length > 1 ? (
+            <FeatureGroup>
+              <Polyline positions={samples} />
+            </FeatureGroup>
+          ) : (
+            <CircleMarker center={samples[0]}> </CircleMarker>
+          ))}
+        <TileLayer
+          url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+          attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        />
+      </MapContainer>
+      <div className='calendar-container'>
+        {days && (
+          <Calendar
+            tileClassName={({ date, view }) => {
+              if (view === 'month') {
+                if (days.includes(date.toISOString().split('T')[0])) {
+                  return 'highlight';
+                } else {
+                  return 'disabled';
+                }
+              } else if (view === 'year') {
+                const s = date.toISOString().split('-');
+                if (s[0] in years && years[s[0]].includes(s[1])) {
+                  return 'highlight';
+                } else {
+                  return 'disabled';
+                }
+              } else if (view === 'decade') {
+                const s = date.toISOString().split('-');
+                if (s[0] in years) {
+                  return 'highlight';
+                } else {
+                  return 'disabled';
+                }
+              }
+            }}
+            onClickDay={(d) => getDay(d.toISOString().split('T')[0])}
+            onViewChange={(view) => {
+              if (view === 'decade') return;
+            }}
+          />
+        )}
+        <div className='session-container'>
+          {sessions && (
+            <h3 className='session-title'>Measurement sessions for: {day}</h3>
+          )}
+
+          {sessions &&
+            sessions.map((entry, i) => (
+              <div className='session-tile' key={`${entry.session}_${i}`}>
+                <font
                   color={
-                    values.edr > 0.8
+                    largestAnomalyForSession(entry.session) > 0.8
                       ? '#E15759'
-                      : values.edr > 0.5
+                      : largestAnomalyForSession(entry.session) > 0.5
                       ? '#F28E2B'
                       : '#EDC948'
                   }
                 >
-                  <Popup>
-                    {`EDR of ${values.edr.toFixed(
-                      3
-                    )} at approximately ${values.alt.toFixed(
-                      1
-                    )} meters of altitude going ${values.ms.toFixed(1)} m/s`}
-                  </Popup>
-                </CircleMarker>
-              ))
-            )}
-          {samples &&
-            (samples.length > 1 ? (
-              <FeatureGroup>
-                <Polyline positions={samples} />
-              </FeatureGroup>
-            ) : (
-              <CircleMarker center={samples[0]}> </CircleMarker>
-            ))}
-          <TileLayer
-            url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-            attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-          />
-        </MapContainer>
-        <div className='calendar-container'>
-          {days && (
-            <Calendar
-              tileClassName={({ date, view }) => {
-                if (view === 'month') {
-                  if (days.includes(date.toISOString().split('T')[0])) {
-                    return 'highlight';
-                  } else {
-                    return 'disabled';
-                  }
-                } else if (view === 'year') {
-                  const s = date.toISOString().split('-');
-                  if (s[0] in years && years[s[0]].includes(s[1])) {
-                    return 'highlight';
-                  } else {
-                    return 'disabled';
-                  }
-                } else if (view === 'decade') {
-                  const s = date.toISOString().split('-');
-                  if (s[0] in years) {
-                    return 'highlight';
-                  } else {
-                    return 'disabled';
-                  }
-                }
-              }}
-              onClickDay={(d) => getDay(d.toISOString().split('T')[0])}
-              onViewChange={(view) => {
-                if (view === 'decade') return;
-              }}
-            />
-          )}
-          <div className='session-container'>
-            {sessions && (
-              <h3 className='session-title'>Measurement sessions for: {day}</h3>
-            )}
-
-            {sessions &&
-              sessions.map((entry, i) => (
-                <div className='session-tile' key={`${entry.session}_${i}`}>
-                  <font
-                    color={
-                      largestAnomalyForSession(entry.session) > 0.8
-                        ? '#E15759'
-                        : largestAnomalyForSession(entry.session) > 0.5
-                        ? '#F28E2B'
-                        : '#EDC948'
-                    }
+                  {largestAnomalyForSession(entry.session) > 0.2 && (
+                    <FontAwesomeIcon className='session-edr' icon={faWarning} />
+                  )}
+                </font>
+                {cleanSessionName(entry.session)}
+                <div className='session-buttons'>
+                  <button
+                    className='session-route'
+                    title='Show route'
+                    onClick={() => getSample(day, entry.session)}
                   >
-                    {largestAnomalyForSession(entry.session) > 0.2 && (
-                      <FontAwesomeIcon
-                        className='session-edr'
-                        icon={faWarning}
-                      />
-                    )}
-                  </font>
-                  {cleanSessionName(entry.session)}
-                  <div className='session-buttons'>
-                    <button
-                      className='session-route'
-                      title='Show route'
-                      onClick={() => getSample(day, entry.session)}
-                    >
-                      <FontAwesomeIcon icon={faCompass} />
-                    </button>
-                    <a
-                      className='session-download'
-                      href={`${API}/days/${day}/sessions/${entry.session}/csv`}
-                      title='Download CSV'
-                    >
-                      <FontAwesomeIcon icon={faDownload} />
-                    </a>
-                  </div>
+                    <FontAwesomeIcon icon={faCompass} />
+                  </button>
+                  <a
+                    className='session-download'
+                    href={`${API}/days/${day}/sessions/${entry.session}/csv`}
+                    title='Download CSV'
+                  >
+                    <FontAwesomeIcon icon={faDownload} />
+                  </a>
                 </div>
-              ))}
-          </div>
+              </div>
+            ))}
         </div>
-      </main>
+      </div>
+    </main>
   );
 };
 
