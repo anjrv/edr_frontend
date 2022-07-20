@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import Data from './pages/Data';
 import Info from './pages/Info';
-import Nav from './Nav';
+import Nav from './components/Nav';
 
 function App() {
   return (
