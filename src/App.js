@@ -8,6 +8,12 @@ import {
   Popup,
 } from 'react-leaflet';
 import { Calendar } from 'react-calendar';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faCompass,
+  faDownload,
+  faWarning,
+} from '@fortawesome/free-solid-svg-icons';
 
 import { cleanSessionName, compareDate, compareEdr } from './utils.js';
 
@@ -174,25 +180,40 @@ function App() {
 
             {sessions &&
               sessions.map((entry, i) => (
-                <div
-                  className='session-button'
-                  key={`${entry.session}_${i}`}
-                  onClick={() => getSample(day, entry.session)}
-                >
-                  {cleanSessionName(entry.session) + ' '}
+                <div className='session-tile' key={`${entry.session}_${i}`}>
                   <font
                     color={
                       largestAnomalyForSession(entry.session) > 0.8
                         ? '#E15759'
                         : largestAnomalyForSession(entry.session) > 0.5
                         ? '#F28E2B'
-                        : largestAnomalyForSession(entry.session) > 0.2
-                        ? '#EDC948'
-                        : 'white'
+                        : '#EDC948'
                     }
                   >
-                    <span>⚠</span>
+                    {largestAnomalyForSession(entry.session) > 0.2 && (
+                      <FontAwesomeIcon
+                        className='session-edr'
+                        icon={faWarning}
+                      />
+                    )}
                   </font>
+                  {cleanSessionName(entry.session)}
+                  <div className='session-buttons'>
+                    <button
+                      className='session-route'
+                      title='Show route'
+                      onClick={() => getSample(day, entry.session)}
+                    >
+                      <FontAwesomeIcon icon={faCompass} />
+                    </button>
+                    <a
+                      className='session-download'
+                      href={`${API}/days/${day}/sessions/${entry.session}/csv`}
+                      title='Download CSV'
+                    >
+                      <FontAwesomeIcon icon={faDownload} />
+                    </a>
+                  </div>
                 </div>
               ))}
           </div>

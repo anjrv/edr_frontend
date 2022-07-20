@@ -21,25 +21,55 @@
 
 .session-title {
   width: 100%;
-  line-height: 36px;
+  height: 34px;
   margin: 4px 4px 4px 4px;
   border-bottom: 1px solid black;
 }
 
-.session-button {
-  width: 192px;
-  height: 40px;
-  line-height: 32px;
-  margin: 0px 4px 4px 4px;
+.session-tile {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 224px;
+  height: 34px;
+  margin: 4px 4px 4px 4px;
+  padding-left: 4px;
   background: none;
-  text-align: center;
   border: 1px solid #a0a096;
   text-decoration: none;
 }
 
-.session-button:hover,
-.session-button:focus {
-  background-color: #e6e6e6;
+.session-buttons {
+  margin-left: auto;
+}
+
+.session-route,
+.session-download {
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 600;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  margin-right: 4px;
+  color: white;
+  background: black;
+  vertical-align: middle;
+  border: 1px solid #000;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.session-route:hover,
+.session-download:hover {
+  color: black;
+  background: white;
+}
+
+.session-edr {
+  margin: 4px;
 }
 
 .leaflet-container {
