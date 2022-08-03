@@ -1,4 +1,4 @@
-const Info = () => {
+const About = () => {
   return (
     <main>
       <img src={process.env.PUBLIC_URL + 'passion.jpg'} alt={'Yup'} />
@@ -6,4 +6,4 @@ const Info = () => {
   );
 };
 
-export default Info;
+export default About;

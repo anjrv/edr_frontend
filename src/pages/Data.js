@@ -22,7 +22,8 @@ import { cleanSessionName, compareDate, compareEdr } from '../utils.js';
 import 'react-calendar/dist/Calendar.css';
 import './Data.css';
 
-const API = 'http://192.168.1.13:3456';
+// const API = 'http://192.168.1.13:3456';
+const API = 'http://31.209.145.132:3456';
 const DEFAULT_CENTER = [64.9631, -19.0208];
 const DEFAULT_ZOOM = 6;
 
@@ -83,6 +84,8 @@ const Data = () => {
             .sort(compareEdr)
             .reverse();
         }); // Sort so we can add color markers to session buttons
+
+        console.log(data.anomalies);
         setAnomalies(data.anomalies);
         setSamples(null); // Clear sample highlight if day changes
       });
@@ -101,6 +104,28 @@ const Data = () => {
 
         setSamples(result);
       });
+  }
+
+  function getColor(value) {
+    if (value.edr_rms) {
+      return value.edr_rms > 0.8
+        ? '#E15759'
+        : value.edr_rms > 0.5
+        ? '#F28E2B'
+        : '#EDC948';
+    }
+
+    return value.edr > 0.8
+      ? '#E15759'
+      : value.edr > 0.5
+      ? '#F28E2B'
+      : '#EDC948';
+  }
+
+  function getEdr(value) {
+    if (value.edr_rms) return value.edr_rms;
+
+    return value.edr;
   }
 
   const ChangeView = ({ markers }) => {
@@ -133,20 +158,19 @@ const Data = () => {
                 key={`${entry.session}_${values.time}`}
                 center={[values.lat, values.lon]}
                 radius={8}
-                color={
-                  values.edr > 0.8
-                    ? '#E15759'
-                    : values.edr > 0.5
-                    ? '#F28E2B'
-                    : '#EDC948'
-                }
+                color={getColor(values)}
               >
                 <Popup>
-                  {`EDR of ${values.edr.toFixed(
-                    3
-                  )} at approximately ${values.alt.toFixed(
-                    1
-                  )} meters of altitude going ${values.ms.toFixed(1)} m/s`}
+                  <ul>
+                    <li>
+                      <h3>Speed: {values.ms.toFixed(3)} m/s</h3>
+                      {values.rms && <h3>RMS: {values.rms.toFixed(3)}</h3>}
+                      <h3>EDR: {getEdr(values).toFixed(3)}</h3>
+                      {values.windAvg && <h3>Wind avg: {Math.round(values.windAvg)} m/s</h3>}
+                      {values.windMax && <h3>Wind max: {Math.round(values.windMax)} m/s</h3>}
+                      {values.windDir && <h3>Wind direction: {Math.floor(values.windDir)} degrees</h3>}
+                    </li>
+                  </ul>
                 </Popup>
               </CircleMarker>
             ))

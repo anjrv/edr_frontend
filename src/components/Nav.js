@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 import './Nav.css';
 
@@ -7,10 +7,15 @@ export default class Nav extends React.Component {
   render() {
     return (
       <nav className='nav-container'>
-        <div>
-          <Link to='/'>Map </Link>
-          <Link to='/info'>Info</Link>
-        </div>
+          <NavLink className='nav-link' to='/'>
+            Map
+          </NavLink>
+          <NavLink className='nav-link' to='/android'>
+            App
+          </NavLink>
+          <NavLink className='nav-link' to='/about'>
+            About
+          </NavLink>
       </nav>
     );
   }

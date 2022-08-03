@@ -1,3 +1,13 @@
+.leaflet-container {
+  border: 1px solid black;
+  border-radius: 5px;
+}
+
+.react-calendar {
+  border: 1px solid black;
+  border-radius: 5px;
+}
+
 .calendar-container {
   display: flex;
   flex-direction: row;
@@ -5,6 +15,8 @@
 }
 
 .session-container {
+  color: #000;
+  margin-left: 8px;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
@@ -25,8 +37,9 @@
   height: 34px;
   margin: 4px 4px 4px 4px;
   padding-left: 4px;
-  background: none;
+  background: #fff;
   border: 1px solid #a0a096;
+  border-radius: 3px;
   text-decoration: none;
 }
 
@@ -47,10 +60,11 @@
   background: black;
   vertical-align: middle;
   border: 1px solid #000;
+  border-radius: 3px;
   text-align: center;
   text-decoration: none;
   cursor: pointer;
-  transition: 0.25s;
+  transition: 0.15s all ease-in-out;
 }
 
 .session-route:hover,
@@ -75,6 +89,7 @@
 
 .highlight {
   background: #a1d99b;
+  transition: 0.15s all ease-in-out;
 }
 
 .highlight:hover {

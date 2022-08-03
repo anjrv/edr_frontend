@@ -12,6 +12,9 @@ body {
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
+
+  color: #aad3df;
+  background-color: #f2efe9;
 }
 
 * {
@@ -28,7 +31,16 @@ code {
     monospace;
 }
 
- a, a:hover, a:focus, a:active {
-      text-decoration: none;
-      color: inherit;
- }
+a,
+a:hover,
+a:focus,
+a:active {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
