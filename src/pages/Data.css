@@ -79,7 +79,8 @@
 
 .leaflet-container {
   width: 100%;
-  height: 60vh;
+  /* Allow map to fill remaining height, approx 55px to give room for nav, 280 for calendar, 30px for some padding from botton */
+  height: calc(100vh - 55px - 280px - 30px);
 }
 
 .disabled {
