@@ -123,7 +123,7 @@ const Data = () => {
   }
 
   function getEdr(value) {
-    if (value.edr_rms) return value.edr_rms;
+    if (value.edrRms) return value.edrRms;
 
     return value.edr;
   }
