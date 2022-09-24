@@ -163,6 +163,7 @@ const Data = () => {
                 <Popup>
                   <ul>
                     <li>
+                      <h3>Session: {values.session.split('_')[2]}</h3>
                       <h3>Speed: {values.ms.toFixed(3)} m/s</h3>
                       {values.rms && <h3>RMS: {values.rms.toFixed(3)}</h3>}
                       <h3>EDR: {getEdr(values).toFixed(3)}</h3>
